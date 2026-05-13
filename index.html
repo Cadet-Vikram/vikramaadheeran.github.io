@@ -923,7 +923,49 @@ async function sendEmail(){
 
 // ===== CHATBOT =====
 // Groq API — free at console.groq.com → API Keys → Create key → paste below
-const GROQ_API_KEY = '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';
+const WORKER_URL = 'https://vikram-chat-proxy.saiharivignesh05.workers.dev/'; // ← paste your worker URL here
+
+async function sendChat() {
+  const inp = document.getElementById('chInp'), msgs = document.getElementById('chMsgs');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = '';
+
+  const um = document.createElement('div');
+  um.className = 'msg msg-usr'; um.textContent = msg;
+  msgs.appendChild(um);
+  chatHistory.push({ role: 'user', content: msg });
+
+  const tp = document.createElement('div');
+  tp.className = 'msg msg-typing';
+  tp.innerHTML = '<div class="td"></div><div class="td"></div><div class="td"></div>';
+  msgs.appendChild(tp);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: chatHistory, system: CTX })
+    });
+    const data = await res.json();
+    tp.remove();
+    const reply = data.choices?.[0]?.message?.content
+      || "I had a hiccup! Email Vikram at saiharivignesh05@gmail.com 😊";
+    chatHistory.push({ role: 'assistant', content: reply });
+    if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+    const bm = document.createElement('div');
+    bm.className = 'msg msg-bot'; bm.textContent = reply;
+    msgs.appendChild(bm);
+  } catch (e) {
+    tp.remove();
+    const bm = document.createElement('div');
+    bm.className = 'msg msg-bot';
+    bm.textContent = "Network issue! Reach Vikram at saiharivignesh05@gmail.com 😊";
+    msgs.appendChild(bm);
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
 
 let chatOpen=false;
 // Store full conversation history for multi-turn context
