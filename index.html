@@ -921,51 +921,7 @@ async function sendEmail(){
   btn.disabled=false;btn.textContent='⚡ TRANSMIT MESSAGE ⚡';
 }
 
-// ===== CHATBOT =====
-// Groq API — free at console.groq.com → API Keys → Create key → paste below
-const WORKER_URL = 'https://vikram-chat-proxy.saiharivignesh05.workers.dev/'; // ← paste your worker URL here
 
-async function sendChat() {
-  const inp = document.getElementById('chInp'), msgs = document.getElementById('chMsgs');
-  const msg = inp.value.trim();
-  if (!msg) return;
-  inp.value = '';
-
-  const um = document.createElement('div');
-  um.className = 'msg msg-usr'; um.textContent = msg;
-  msgs.appendChild(um);
-  chatHistory.push({ role: 'user', content: msg });
-
-  const tp = document.createElement('div');
-  tp.className = 'msg msg-typing';
-  tp.innerHTML = '<div class="td"></div><div class="td"></div><div class="td"></div>';
-  msgs.appendChild(tp);
-  msgs.scrollTop = msgs.scrollHeight;
-
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: chatHistory, system: CTX })
-    });
-    const data = await res.json();
-    tp.remove();
-    const reply = data.choices?.[0]?.message?.content
-      || "I had a hiccup! Email Vikram at saiharivignesh05@gmail.com 😊";
-    chatHistory.push({ role: 'assistant', content: reply });
-    if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
-    const bm = document.createElement('div');
-    bm.className = 'msg msg-bot'; bm.textContent = reply;
-    msgs.appendChild(bm);
-  } catch (e) {
-    tp.remove();
-    const bm = document.createElement('div');
-    bm.className = 'msg msg-bot';
-    bm.textContent = "Network issue! Reach Vikram at saiharivignesh05@gmail.com 😊";
-    msgs.appendChild(bm);
-  }
-  msgs.scrollTop = msgs.scrollHeight;
-}
 
 let chatOpen=false;
 // Store full conversation history for multi-turn context
@@ -1035,65 +991,51 @@ INSTRUCTIONS:
 - If asked something you don't know, say you're not sure but Vikram can answer directly via email
 - Keep replies warm, punchy, and professional`;
 
-async function sendChat(){
-  const inp=document.getElementById('chInp'),msgs=document.getElementById('chMsgs');
-  const msg=inp.value.trim();
-  if(!msg)return;
-  inp.value='';
+  
+const WORKER_URL = 'https://vikram-chat-proxy.saiharivignesh05.workers.dev/'; // ← paste your worker URL here
 
-  // Add user message to UI
-  const um=document.createElement('div');
-  um.className='msg msg-usr';um.textContent=msg;
+async function sendChat() {
+  const inp = document.getElementById('chInp'), msgs = document.getElementById('chMsgs');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = '';
+
+  const um = document.createElement('div');
+  um.className = 'msg msg-usr'; um.textContent = msg;
   msgs.appendChild(um);
+  chatHistory.push({ role: 'user', content: msg });
 
-  // Add to history
-  chatHistory.push({role:'user',content:msg});
-
-  // Typing indicator
-  const tp=document.createElement('div');
-  tp.className='msg msg-typing';
-  tp.innerHTML='<div class="td"></div><div class="td"></div><div class="td"></div>';
+  const tp = document.createElement('div');
+  tp.className = 'msg msg-typing';
+  tp.innerHTML = '<div class="td"></div><div class="td"></div><div class="td"></div>';
   msgs.appendChild(tp);
-  msgs.scrollTop=msgs.scrollHeight;
+  msgs.scrollTop = msgs.scrollHeight;
 
-  if(GROQ_API_KEY==='YOUR_GROQ_API_KEY'){
-    tp.remove();
-    const bm=document.createElement('div');bm.className='msg msg-bot';
-    bm.textContent="⚙️ Groq API key not set yet! Get your free key at console.groq.com and paste it in the HTML.";
-    msgs.appendChild(bm);msgs.scrollTop=msgs.scrollHeight;return;
-  }
-
-  try{
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${GROQ_API_KEY}`},
-      body:JSON.stringify({
-        model:'llama-3.1-8b-instant', // fast, free model
-        max_tokens:300,
-        temperature:0.7,
-        messages:[
-          {role:'system',content:CTX},
-          ...chatHistory  // full conversation context
-        ]
-      })
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: chatHistory, system: CTX })
     });
-    const data=await res.json();
+    const data = await res.json();
     tp.remove();
-    const reply=data.choices?.[0]?.message?.content||"I had a hiccup! Email Vikram at saiharivignesh05@gmail.com 😊";
-    // Add assistant reply to history
-    chatHistory.push({role:'assistant',content:reply});
-    // Keep history to last 10 messages to avoid token limits
-    if(chatHistory.length>10)chatHistory=chatHistory.slice(-10);
-    const bm=document.createElement('div');bm.className='msg msg-bot';bm.textContent=reply;
+    const reply = data.choices?.[0]?.message?.content
+      || "I had a hiccup! Email Vikram at saiharivignesh05@gmail.com 😊";
+    chatHistory.push({ role: 'assistant', content: reply });
+    if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+    const bm = document.createElement('div');
+    bm.className = 'msg msg-bot'; bm.textContent = reply;
     msgs.appendChild(bm);
-  }catch(e){
+  } catch (e) {
     tp.remove();
-    const bm=document.createElement('div');bm.className='msg msg-bot';
-    bm.textContent="Network issue! Reach Vikram at saiharivignesh05@gmail.com or +91 63851 76833 😊";
+    const bm = document.createElement('div');
+    bm.className = 'msg msg-bot';
+    bm.textContent = "Network issue! Reach Vikram at saiharivignesh05@gmail.com 😊";
     msgs.appendChild(bm);
   }
-  msgs.scrollTop=msgs.scrollHeight;
+  msgs.scrollTop = msgs.scrollHeight;
 }
+
 
 // ===== PARTICLES =====
 const canvas=document.getElementById('particles'),ctx=canvas.getContext('2d');
